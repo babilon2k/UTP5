@@ -54,6 +54,8 @@ public class Gui extends JFrame
 	private JTable table;
 	private JPanel panelTable;
 	private JScrollPane spTable;
+	private JScrollPane spTextArea;
+	private JTextArea dataTextArea;
 
 	public Gui()
 	{
@@ -174,9 +176,13 @@ public class Gui extends JFrame
 		btnRunScript = new JButton("Create and run ad hoc script");
 		initTable();
 
+		spTextArea = new JScrollPane();
+		spTextArea.setViewportBorder(new TitledBorder(null, "Computadet data",
+				TitledBorder.LEADING, TitledBorder.TOP, null, null));
+
 		GroupLayout gl_panelTable = new GroupLayout(panelTable);
 		gl_panelTable.setHorizontalGroup(gl_panelTable
-				.createParallelGroup(Alignment.LEADING)
+				.createParallelGroup(Alignment.TRAILING)
 				.addGroup(gl_panelTable.createSequentialGroup()
 						.addGroup(gl_panelTable
 								.createParallelGroup(Alignment.LEADING)
@@ -186,19 +192,32 @@ public class Gui extends JFrame
 										.addGap(144).addComponent(btnRunScript))
 								.addGroup(gl_panelTable.createSequentialGroup()
 										.addContainerGap().addComponent(spTable,
-												GroupLayout.DEFAULT_SIZE, 823, Short.MAX_VALUE)))
-						.addGap(22)));
+												GroupLayout.DEFAULT_SIZE, 815,
+												Short.MAX_VALUE)))
+						.addGap(22))
+				.addGroup(Alignment.LEADING,
+						gl_panelTable.createSequentialGroup().addContainerGap()
+								.addComponent(spTextArea,
+										GroupLayout.DEFAULT_SIZE, 816,
+										Short.MAX_VALUE)
+								.addGap(21)));
 		gl_panelTable.setVerticalGroup(gl_panelTable
 				.createParallelGroup(Alignment.TRAILING)
 				.addGroup(gl_panelTable.createSequentialGroup().addGap(56)
-						.addComponent(spTable, GroupLayout.DEFAULT_SIZE, 506,
+						.addComponent(spTable, GroupLayout.PREFERRED_SIZE, 220,
+								GroupLayout.PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addComponent(spTextArea, GroupLayout.DEFAULT_SIZE, 282,
 								Short.MAX_VALUE)
-						.addGap(18)
+						.addPreferredGap(ComponentPlacement.UNRELATED)
 						.addGroup(gl_panelTable
 								.createParallelGroup(Alignment.BASELINE)
 								.addComponent(btnRunScriptFromFile)
 								.addComponent(btnRunScript))
 						.addGap(41)));
+
+		dataTextArea = new JTextArea();
+		spTextArea.setViewportView(dataTextArea);
 
 		panelTable.setLayout(gl_panelTable);
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
@@ -208,10 +227,10 @@ public class Gui extends JFrame
 						.addComponent(panelLists, GroupLayout.PREFERRED_SIZE,
 								GroupLayout.DEFAULT_SIZE,
 								GroupLayout.PREFERRED_SIZE)
-						.addGap(4)
-						.addComponent(panelTable, GroupLayout.DEFAULT_SIZE,
-								GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-						.addGap(103)));
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(panelTable, GroupLayout.DEFAULT_SIZE, 847,
+								Short.MAX_VALUE)
+						.addGap(109)));
 		gl_contentPane.setVerticalGroup(gl_contentPane
 				.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPane.createSequentialGroup().addGap(7)
@@ -244,8 +263,8 @@ public class Gui extends JFrame
 						{"IMP", null, null, null, null, null},
 						{"PKB", null, null, null, null, null},
 						{"ZDEKS", null, null, null, null, null},},
-				new String[]{"", "2015", "New column", "New column",
-						"New column", "New column"}));
+				new String[]{"", "2015", "2016", "New column", "New column",
+						"New column"}));
 		table.setColumnSelectionAllowed(false);
 		spTable.setViewportView(table);
 	}
@@ -330,7 +349,7 @@ public class Gui extends JFrame
 
 					// Do usuniecia jak table bedzie dzialac
 					String res = c.getResultsAsTsv();
-					System.out.println(res);
+					dataTextArea.setText(res);
 
 				} else
 					JOptionPane.showMessageDialog(null,
@@ -360,7 +379,7 @@ public class Gui extends JFrame
 
 						// Do usuniecia jak table bedzie dzialac
 						String res = c.getResultsAsTsv();
-						System.out.println(res);
+						dataTextArea.setText(res);
 					} else if (result == JFileChooser.CANCEL_OPTION)
 					{
 						JOptionPane.showMessageDialog(null,
@@ -408,7 +427,7 @@ public class Gui extends JFrame
 
 							// Do usuniecia jak table bedzie dzialac
 							String res = c.getResultsAsTsv();
-							System.out.println(res);
+							dataTextArea.setText(res);
 						} else
 							JOptionPane.showMessageDialog(null,
 									"Please select model and data");
