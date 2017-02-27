@@ -35,7 +35,7 @@ import javax.swing.table.DefaultTableModel;
 
 import zad1.models.Model1;
 
-public class Gui extends JFrame
+public class Gui extends JFrame implements ActionListener
 {
 
 	private static final long serialVersionUID = 1L;
@@ -82,7 +82,6 @@ public class Gui extends JFrame
 	protected void createGui()
 	{
 		initComponents();
-		createEvents();
 	}
 
 	private void initComponents()
@@ -108,6 +107,7 @@ public class Gui extends JFrame
 				TitledBorder.LEADING, TitledBorder.TOP, null, null));
 
 		btnRun = new JButton("Run model");
+		btnRun.addActionListener(this);
 
 		JLabel lblSelectModel = new JLabel("Select model and data");
 		lblSelectModel.setFont(new Font("Tahoma", Font.BOLD, 12));
@@ -173,7 +173,9 @@ public class Gui extends JFrame
 		// Table panel
 		panelTable = new JPanel();
 		btnRunScriptFromFile = new JButton("Run Script From File");
+		btnRunScriptFromFile.addActionListener(this);
 		btnRunScript = new JButton("Create and run ad hoc script");
+		btnRunScript.addActionListener(this);
 		initTable();
 
 		spTextArea = new JScrollPane();
@@ -310,8 +312,118 @@ public class Gui extends JFrame
 		lstData.setModel(dataModel);
 	}
 
-	private void createEvents()
+	@Override
+	public void actionPerformed(ActionEvent e)
 	{
+		JButton source = (JButton) e.getSource();
+		// Button Run in Lists Panel. Selected model and selected data
+		if (source == btnRun)
+		{
+			if (lstData.getSelectedValue() != null
+					&& lstModels.getSelectedValue() != null)
+			{
+				c = new Controller(lstModels.getSelectedValue().toString());
+
+				JFileChooser fc = new JFileChooser();
+				fc.setSelectedFile(new File(System.getProperty("user.home")
+						+ "/Modeling/scripts/script1.groovy"));
+				String filename = fc.getSelectedFile().getPath();
+				c.readDataFrom(lstData.getSelectedValue().toString()).runModel()
+						.runScriptFromFile(filename);
+
+				// Do usuniecia jak table bedzie dzialac
+				String res = c.getResultsAsTsv();
+				dataTextArea.setText(res);
+
+			} else
+				JOptionPane.showMessageDialog(null,
+						"Please select model and data");
+		}
+		// Run Script From File
+		else if (source == btnRunScriptFromFile)
+		{
+			if (lstData.getSelectedValue() != null
+					&& lstModels.getSelectedValue() != null)
+			{
+				c = new Controller(lstModels.getSelectedValue().toString());
+				JFileChooser fc = new JFileChooser();
+				fc.setCurrentDirectory(new File(System.getProperty("user.home")
+						+ "/Modeling/scripts/"));
+				int result = fc.showOpenDialog(null);
+				if (result == JFileChooser.APPROVE_OPTION)
+				{
+					String filename = fc.getSelectedFile().getPath();
+					c.readDataFrom(lstData.getSelectedValue().toString())
+							.runModel().runScriptFromFile(filename);
+
+					// Do usuniecia jak table bedzie dzialac
+					String res = c.getResultsAsTsv();
+					dataTextArea.setText(res);
+				} else if (result == JFileChooser.CANCEL_OPTION)
+				{
+					JOptionPane.showMessageDialog(null,
+							"You didn't select a file.");
+				} else if (result == JFileChooser.ERROR_OPTION)
+				{
+					JOptionPane.showInternalMessageDialog(null, "Error");
+				}
+			} else
+				JOptionPane.showMessageDialog(null,
+						"Please select model and data");
+		}
+		// Run script from JTextArea and new input window
+		else if (source == btnRunScript)
+		{
+			JFrame jf = new JFrame("Script");
+			JPanel panel = new JPanel();
+			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+			JTextArea scriptTxtArea = new JTextArea(20, 40);
+			JScrollPane sp = new JScrollPane(scriptTxtArea);
+
+			JPanel inputpanel = new JPanel();
+			inputpanel.setLayout(new FlowLayout());
+			// Buttons
+			JButton btnOk = new JButton("OK");
+			btnOk.addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					if (lstData.getSelectedValue() != null
+							&& lstModels.getSelectedValue() != null)
+					{
+						c = new Controller(
+								lstModels.getSelectedValue().toString());
+
+						c.readDataFrom(lstData.getSelectedValue().toString())
+								.runModel().runScript(scriptTxtArea.getText());
+
+						// Do usuniecia jak table bedzie dzialac
+						String res = c.getResultsAsTsv();
+						dataTextArea.setText(res);
+					} else
+						JOptionPane.showMessageDialog(null,
+								"Please select model and data");
+				}
+			});
+			JButton btnCancel = new JButton("Cancel");
+			btnCancel.addActionListener(new ActionListener()
+			{
+				public void actionPerformed(ActionEvent e)
+				{
+					jf.dispose();
+				}
+			});
+
+			panel.add(sp);
+			inputpanel.add(btnOk);
+			inputpanel.add(btnCancel);
+			panel.add(inputpanel);
+			jf.getContentPane().add(BorderLayout.CENTER, panel);
+			jf.setBounds(100, 100, 600, 400);
+			jf.setLocationRelativeTo(btnRunScript);
+			jf.setVisible(true);
+		} ;
 		// Model list handlers
 		lstModels.addMouseListener(new MouseAdapter()
 		{
@@ -320,136 +432,12 @@ public class Gui extends JFrame
 			{
 			}
 		});
-
 		// Data list handlers
 		lstData.addMouseListener(new MouseAdapter()
 		{
 			@Override
 			public void mouseClicked(MouseEvent e)
 			{
-			}
-		});
-
-		// Button Run in Lists Panel. Selected model and selected data
-		btnRun.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				if (lstData.getSelectedValue() != null
-						&& lstModels.getSelectedValue() != null)
-				{
-					c = new Controller(lstModels.getSelectedValue().toString());
-
-					JFileChooser fc = new JFileChooser();
-					fc.setSelectedFile(new File(System.getProperty("user.home")
-							+ "/Modeling/scripts/script1.groovy"));
-					String filename = fc.getSelectedFile().getPath();
-					c.readDataFrom(lstData.getSelectedValue().toString())
-							.runModel().runScriptFromFile(filename);
-
-					// Do usuniecia jak table bedzie dzialac
-					String res = c.getResultsAsTsv();
-					dataTextArea.setText(res);
-
-				} else
-					JOptionPane.showMessageDialog(null,
-							"Please select model and data");
-			}
-		});
-
-		// Run Script From File
-		btnRunScriptFromFile.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				if (lstData.getSelectedValue() != null
-						&& lstModels.getSelectedValue() != null)
-				{
-					c = new Controller(lstModels.getSelectedValue().toString());
-					JFileChooser fc = new JFileChooser();
-					fc.setCurrentDirectory(
-							new File(System.getProperty("user.home")
-									+ "/Modeling/scripts/"));
-					int result = fc.showOpenDialog(null);
-					if (result == JFileChooser.APPROVE_OPTION)
-					{
-						String filename = fc.getSelectedFile().getPath();
-						c.readDataFrom(lstData.getSelectedValue().toString())
-								.runModel().runScriptFromFile(filename);
-
-						// Do usuniecia jak table bedzie dzialac
-						String res = c.getResultsAsTsv();
-						dataTextArea.setText(res);
-					} else if (result == JFileChooser.CANCEL_OPTION)
-					{
-						JOptionPane.showMessageDialog(null,
-								"You didn't select a file.");
-					} else if (result == JFileChooser.ERROR_OPTION)
-					{
-						JOptionPane.showInternalMessageDialog(null, "Error");
-					}
-				} else
-					JOptionPane.showMessageDialog(null,
-							"Please select model and data");
-			}
-		});
-
-		// Run script from JTextArea and new input window
-		btnRunScript.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				JFrame jf = new JFrame("Script");
-				JPanel panel = new JPanel();
-				panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-				JTextArea scriptTxtArea = new JTextArea(20, 40);
-				JScrollPane sp = new JScrollPane(scriptTxtArea);
-
-				JPanel inputpanel = new JPanel();
-				inputpanel.setLayout(new FlowLayout());
-				// Buttons
-				JButton btnOk = new JButton("OK");
-				btnOk.addActionListener(new ActionListener()
-				{
-					public void actionPerformed(ActionEvent e)
-					{
-						if (lstData.getSelectedValue() != null
-								&& lstModels.getSelectedValue() != null)
-						{
-							c = new Controller(
-									lstModels.getSelectedValue().toString());
-
-							c.readDataFrom(
-									lstData.getSelectedValue().toString())
-									.runModel()
-									.runScript(scriptTxtArea.getText());
-
-							// Do usuniecia jak table bedzie dzialac
-							String res = c.getResultsAsTsv();
-							dataTextArea.setText(res);
-						} else
-							JOptionPane.showMessageDialog(null,
-									"Please select model and data");
-					}
-				});
-				JButton btnCancel = new JButton("Cancel");
-				btnCancel.addActionListener(new ActionListener()
-				{
-					public void actionPerformed(ActionEvent e)
-					{
-						jf.dispose();
-					}
-				});
-
-				panel.add(sp);
-				inputpanel.add(btnOk);
-				inputpanel.add(btnCancel);
-				panel.add(inputpanel);
-				jf.getContentPane().add(BorderLayout.CENTER, panel);
-				jf.setBounds(100, 100, 600, 400);
-				jf.setLocationRelativeTo(btnRunScript);
-				jf.setVisible(true);
 			}
 		});
 	}
